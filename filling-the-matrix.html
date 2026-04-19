@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Matrix Filling</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #matrix {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            transition: background-color 0.5s;
+        }
+        .filled {
+            background-color: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="matrix"></div>
+    <script>
+        function createMatrix(size) {
+            const matrix = document.getElementById('matrix');
+            matrix.innerHTML = '';
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                matrix.appendChild(cell);
+            }
+        }
+
+        function spiralFill(size, speed) {
+            const matrix = document.querySelectorAll('.cell');
+            let left = 0, right = size - 1, top = 0, bottom = size - 1, val = 1;
+
+            function fill() {
+                if (left > right || top > bottom) return;
+
+                for (let i = left; i <= right; i++) {
+                    matrix[top * size + i].innerText = val++;
+                    matrix[top * size + i].classList.add('filled');
+                    await new Promise(resolve => setTimeout(resolve, speed));
+                }
+                top++;
+                
+                for (let i = top; i <= bottom; i++) {
+                    matrix[i * size + right].innerText = val++;
+                    matrix[i * size + right].classList.add('filled');
+                    await new Promise(resolve => setTimeout(resolve, speed));
+                }
+                right--;
+                
+                if (top <= bottom) {
+                    for (let i = right; i >= left; i--) {
+                        matrix[bottom * size + i].innerText = val++;
+                        matrix[bottom * size + i].classList.add('filled');
+                        await new Promise(resolve => setTimeout(resolve, speed));
+                    }
+                    bottom--;
+                }
+                
+                if (left <= right) {
+                    for (let i = bottom; i >= top; i--) {
+                        matrix[i * size + left].innerText = val++;
+                        matrix[i * size + left].classList.add('filled');
+                        await new Promise(resolve => setTimeout(resolve, speed));
+                    }
+                    left++;
+                }
+
+                fill();
+            }
+
+            fill();
+        }
+
+        const urlParams = new URLSearchParams(window.location.hash.substring(1));
+        const speed = Number(urlParams.get('speed')) || 500;
+        createMatrix(10);
+        spiralFill(10, speed);
+    </script>
+</body>
+</html>
