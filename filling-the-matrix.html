@@ -3,75 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filling The Matrix</title>
+    <title>Fibonacci Spiral</title>
     <style>
-        /* Styles for the spiral effect */
-        body { font-family: Arial, sans-serif; }
-        #spiral { display: grid; }
-        /* Other styles for the matrix and animation */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 100px;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            transition: background-color 0.5s, transform 0.5s;
+        }
+        .animated {
+            animation: spin 1s;
+        }
+        @keyframes spin {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
     </style>
-    <script>
-        function createMatrix(n) {
-            let matrix = Array.from(Array(n), () => Array(n).fill(0));
-            let value = 1;
-            let x = Math.floor(n / 2);
-            let y = Math.floor(n / 2);
-            let spiralLength = 1;
-            let direction = 0;
-            let directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-
-            while (value <= n * n) {
-                for (let i = 0; i < spiralLength; i++) {
-                    if (value % 6 !== 0) {
-                        matrix[x][y] = value;
-                        value++;
-                    }
-                    x += directions[direction][0];
-                    y += directions[direction][1];
-                }
-                direction = (direction + 1) % 4;
-                if (direction % 2 === 0) spiralLength++;
-            }
-            return matrix;
-        }
-
-        function drawMatrix(matrix) {
-            const container = document.getElementById('spiral');
-            container.innerHTML = '';
-            matrix.forEach(row => {
-                const rowDiv = document.createElement('div');
-                row.forEach(value => {
-                    const cell = document.createElement('span');
-                    cell.innerText = value;
-                    rowDiv.appendChild(cell);
-                });
-                container.appendChild(rowDiv);
-            });
-        }
-
-        function start() {
-            const size = parseInt(document.getElementById('sizeInput').value);
-            const speed = parseInt(getHashParameter('speed')) || 1000;
-            const matrix = createMatrix(size);
-            drawMatrix(matrix);
-            // Implement animation effect based on speed
-        }
-
-        function getHashParameter(param) {
-            const hash = window.location.hash.substr(1);
-            const vars = hash.split('&');
-            for (const pair of vars) {
-                const [key, value] = pair.split('=');
-                if (key === param) return value;
-            }
-            return null;
-        }
-    </script>
 </head>
 <body>
-    <h1>Filling the Matrix with Fibonacci Spiral</h1>
-    <input type="number" id="sizeInput" min="1" placeholder="Enter size of matrix" required />
-    <button onclick="start()">Generate Spiral</button>
-    <div id="spiral"></div>
+    <div class="container">
+        <h1>Fibonacci Spiral Matrix</h1>
+        <div class="input-section">
+            <input type="number" id="inputNumber" min="1" max="1000" placeholder="1-1000" required />
+            <button id="goButton">Go</button>
+        </div>
+        <div class="matrix" id="matrix"></div>
+    </div>
+    <script>
+        async function createSpiralMatrix(n) {
+            const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+            let num = 1;
+            let top = 0, left = 0, bottom = n - 1, right = n - 1;
+
+            while (top <= bottom && left <= right) {
+                for (let i = left; i <= right; i++) {
+                    if (!String(num).includes('6')) {
+                        matrix[top][i] = num;
+                        createCell(top, i, num);
+                    }  
+                    num++;
+                    await delay(animation_speed);
+                }
+                top++;
+                for (let i = top; i <= bottom; i++) {
+                    if (!String(num).includes('6')) {
+                        matrix[i][right] = num;
+                        createCell(i, right, num);
+                    }
+                    num++;
+                    await delay(animation_speed);
+                }
+                right--;
+                if (top <= bottom) {
+                    for (let i = right; i >= left; i--) {
+                        if (!String(num).includes('6')) {
+                            matrix[bottom][i] = num;
+                            createCell(bottom, i, num);
+                        }
+                        num++;
+                        await delay(animation_speed);
+                    }
+                    bottom--;
+                }
+                if (left <= right) {
+                    for (let i = bottom; i >= top; i--) {
+                        if (!String(num).includes('6')) {
+                            matrix[i][left] = num;
+                            createCell(i, left, num);
+                        }
+                        num++;
+                        await delay(animation_speed);
+                    }
+                    left++;
+                }
+            }
+        }
+
+        function createCell(row, col, value) {
+            const cell = document.createElement('div');
+            cell.className = 'cell animated';
+            cell.innerText = value;
+            document.getElementById('matrix').appendChild(cell);
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        document.getElementById('goButton').addEventListener('click', () => {
+            const inputNumber = parseInt(document.getElementById('inputNumber').value);
+            if (inputNumber >= 1 && inputNumber <= 1000) {
+                document.getElementById('matrix').innerHTML = '';
+                createSpiralMatrix(inputNumber);
+            } else {
+                alert('Please enter a number between 1 and 1000.');
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.hash.substring(1));
+        const animation_speed = parseInt(urlParams.get('animation_speed')) || 500;
+    </script>
 </body>
 </html>
